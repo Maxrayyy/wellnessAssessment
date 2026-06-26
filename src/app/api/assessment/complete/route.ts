@@ -6,6 +6,8 @@ import {
   calculateDailyCalories, calculateTargetDate, generatePredictionCurve,
 } from "@/lib/algorithm";
 
+export const dynamic = "force-dynamic";
+
 export async function POST() {
   const userId = getOrCreateUserId();
 

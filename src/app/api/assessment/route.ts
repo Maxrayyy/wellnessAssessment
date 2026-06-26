@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getOrCreateUserId } from "@/lib/session";
 import { validateStep } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const userId = getOrCreateUserId();
 
