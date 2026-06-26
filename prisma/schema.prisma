@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ActivityLevel {
+  sedentary
+  light
+  moderate
+  active
+}
+
+enum Goal {
+  lose_weight
+  gain_weight
+  maintain
+  improve_health
+}
+
+enum SubscriptionStatus {
+  FREE
+  PREMIUM
+}
+
+model User {
+  id           String         @id @default(uuid())
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  assessments  Assessment[]
+  subscription Subscription?
+}
+
+model Assessment {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gender        String?
+  goal          Goal?
+  age           Int?
+  height        Float?
+  weight        Float?
+  targetWeight  Float?        @map("target_weight")
+  activityLevel ActivityLevel? @map("activity_level")
+  currentStep   Int           @default(1) @map("current_step")
+  completed     Boolean       @default(false)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  result        AssessmentResult?
+}
+
+model AssessmentResult {
+  id                  String   @id @default(uuid())
+  assessmentId        String   @unique @map("assessment_id")
+  assessment          Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  bmi                 Float
+  bmiCategory         String   @map("bmi_category")
+  recommendedCalories Int      @map("recommended_calories")
+  targetDate          DateTime @map("target_date")
+  predictionCurve     Json?    @map("prediction_curve")
+  createdAt           DateTime @default(now()) @map("created_at")
+}
+
+model Subscription {
+  id        String             @id @default(uuid())
+  userId    String             @unique @map("user_id")
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    SubscriptionStatus @default(FREE)
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+}
