@@ -257,12 +257,39 @@ wellnessAssessment/
               └── localStorage: (前端状态缓存，可选)
 ```
 
-部署步骤：
+### 部署步骤
+
 1. `git push` 到 GitHub
-2. Vercel 关联仓库自动部署
-3. 在 Vercel Dashboard 设置环境变量（DATABASE_URL 等）
-4. 访问 `https://<project>.vercel.app` 即可演示
+2. Vercel 关联仓库，框架自动识别 Next.js
+3. 设置环境变量 `DATABASE_URL`（见下方）
+4. 部署，访问 `https://<project>.vercel.app`
+
+### Vercel 环境变量（必填）
+
+```
+DATABASE_URL=postgresql://postgres.[ref]:[password]@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?pgbouncer=true&connection_limit=1
+```
+
+> 注意：
+> - 密码中的 `#` 需编码为 `%23`
+> - `?pgbouncer=true` 告知 Prisma 禁用 prepared statements，兼容 Supabase PgBouncer 连接池
+> - `connection_limit=1` 适配 Vercel serverless 环境
+> - Vercel Dashboard 中**不要给值加引号**（与 `.env` 文件不同）
+
+### Vercel 部署注意事项
+
+| 要点 | 说明 |
+|------|------|
+| `prisma` 必须在 `dependencies` | Vercel 生产构建只装 `dependencies`，不装 `devDependencies` |
+| `build` 脚本需显式 `prisma generate` | 改为 `prisma generate && next build` |
+| `binaryTargets` 需含 `rhel-openssl-3.0.x` | Vercel 运行在 Amazon Linux 2 (RHEL) |
+| API routes 需 `force-dynamic` | 防止构建阶段预渲染尝试连接数据库 |
+| Supabase pooler 需 `?pgbouncer=true` | PgBouncer 不支持 Prisma prepared statements |
+
+### 部署过程中遇到的问题及修复
+
+详见 `docs/bugs/2026-06-26-vercel-deploy-prisma.md`。共经历 4 次构建失败，根因为上述 4 个 Vercel-Prisma-Supabase 兼容性问题。
 
 ---
 
-*文档版本: 1.0 — 所有章节已与用户逐项确认*
+*文档版本: 1.1 — 2026-06-26 更新 Vercel 部署章节，记录实际部署中的问题与修复*
