@@ -1,2 +1,2 @@
 import { beforeAll, afterAll } from "vitest";
-beforeAll(() => { process.env.NODE_ENV = "test"; });
+beforeAll(() => { process.env = { ...process.env, NODE_ENV: "test" }; });
